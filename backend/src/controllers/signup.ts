@@ -1,11 +1,11 @@
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import { Request, Response } from 'express'
 import { getUserByEmail, getUserByUsername } from '../services/userServices/get'
-import jwt from 'jsonwebtoken'
 import { createUser } from '../services/userServices/create'
 
 export const loginUser = async (req: Request, res: Response) => {
   const { username, password } = req.body
-  console.log('username: ' + username + '\npassword: ' + password)
 
   const loggedUser = await getUserByUsername(username)
 
@@ -14,7 +14,9 @@ export const loginUser = async (req: Request, res: Response) => {
       .status(400)
       .send({ message: 'Username or password does not match!' })
 
-  if (loggedUser.password !== password)
+  const passwordCorrect = await bcrypt.compare(password, loggedUser.password)
+
+  if (!passwordCorrect)
     return res
       .status(400)
       .send({ message: 'Username or password does not match!' })
